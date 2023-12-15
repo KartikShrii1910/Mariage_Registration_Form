@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html ng-app="MarriageRegistrationApp">
+
+<head>
+	<title>Marriage Registration</title>
+	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+
+	<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
+		integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+		crossorigin="anonymous"></script>
+
+	<script src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js"
+		integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+		crossorigin="anonymous"></script>
+
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js"
+		integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+		crossorigin="anonymous"></script>
+<!--
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css"
+		integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">-->
+	<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css" />
+
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@10">
+
+	<script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
+
+	<link rel="stylesheet" type="text/css" href="css/app.css">
+
+
+</head>
+
+<body ng-controller="RegistrationController">
+
+	<!--<nav class="navbar navbar-expand-md bg-dark navbar-dark">
+		<a class="navbar-brand" href="#">Marriage Management Stsytem</a>
+		<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+			aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+			<span class="navbar-toggler-icon"></span>
+		</button>
+
+
+
+	
+		<div class="collapse navbar-collapse" id="collapsibleNavbar">
+			<ul class="navbar-nav">
+				<li class="nav-item"><a class="nav-link" href="/persondetails">List of Person's</a></li>
+
+			</ul>
+
+		</div>
+
+	</nav>-->
+
+
+	<div class="container">
+		<div class="row">
+			<div class="col-lg-6 col-md-6 col-sm-6 comtainer justify-content-center card">
+				<div>
+
+					<h1>Marriage Registration Form</h1>
+					<form enctype="multipart/form-data" action="/upload" method="post" ng-submit="finalSubmitForm()">
+						<label>Name:</label>
+						<input type="text" ng-model="registration.name" maxlength="16" autofocus="autofocus" required>
+
+						<label>Date of Birth:</label>
+						<input type="date" ng-model="registration.dateOfBirth" ng-change="calculateAge()"
+							max="1999-12-31" autofocus="autofocus" required>
+
+						<label>Age:</label>
+						<input class="age" ng-model="registration.age" readonly>
+
+						<br>
+						<label>Profile Photo:</label>
+						<!--	<input type="file" name="image" id="image">-->
+						<input type="file" ng-model="registration.profilePhoto" accept="image/*" name="image" id="image"
+							onchange="angular.element(this).scope().showImagePreview(this)" autofocus="autofocus"
+							required>
+
+
+						<img ng-show="imagePreview || isFormSubmitted"
+							ng-src="{{ isFormSubmitted ? registration.profilePhoto : imagePreview }}"
+							alt="Profile Photo" style="max-width: 100px; max-height: 100px;">
+
+
+						<br><br>
+						<label>Marital Status:</label>
+						<select ng-model="registration.maritalStatus" autofocus="autofocus" required>
+							<option value="" disabled="disabled" selected="selected">
+								Select Status
+							</option>
+							<option value="single">Single</option>
+							<option value="married">Married</option>
+							<option value="divorced">Divorced</option>
+						</select>
+
+						<br><br>
+						<label>Email:</label>
+						<input type="email" ng-model="registration.email" autofocus="autofocus" required>
+
+
+						<label>Select Area:</label>
+						<input type="radio" ng-model="registration.area" value="urban" autofocus="autofocus">
+						Urban
+						<input type="radio" ng-model="registration.area" value="rural" autofocus="autofocus">
+						Rural
+
+						<div ng-if="registration.area === 'urban'">
+							<label>District:</label>
+							<input type="text" ng-model="registration.district" autofocus="autofocus" required>
+							<label>City:</label>
+							<input type="text" ng-model="registration.city" autofocus="autofocus" required>
+						</div>
+
+						<div ng-if="registration.area === 'rural'">
+							<label>District:</label>
+							<input type="text" ng-model="registration.district" autofocus="autofocus" required>
+
+							<label>Block:</label>
+							<input type="text" ng-model="registration.block" autofocus="autofocus" required>
+
+							<label>Gram:</label>
+							<input type="text" ng-model="registration.gram" autofocus="autofocus" required>
+						</div>
+
+
+						<br><label>Mobile Number:</label>
+						<input type="tel" ng-model="registration.mobileNumber" pattern="[6-9]\d{9}"
+							title="Please enter a valid 10-digit phone number" maxlength="10" autofocus="autofocus"
+							required>
+
+						<div align="center">
+							<a ng-click="submitForm()">
+								<button>
+									Check!
+								</button>
+							</a>
+						</div>
+
+						<div>
+
+							<div ng-show="isFormSubmitted && isFormValid()">
+								<h2>Preview Registration Summary</h2>
+								<p>Name: {{ registration.name }}</p>
+								<p>Date of Birth: {{ registration.dateOfBirth | date:'dd-MM-yyyy' }}</p>
+								<p>Age: {{ registration.age }}</p>
+								<p>Profile Photo: {{ registration.profilePhoto }}</p>
+
+								<img ng-show="isFormSubmitted" ng-src="{{ imagePreview || registration.profilePhoto }}"
+									alt="Profile Photo" style="max-width: 100px; max-height: 100px;">
+
+								<p>Email: {{ registration.email }}</p>
+								<p>Marital Status: {{ registration.maritalStatus }}</p>
+								<p>Area: {{ registration.area }}</p>
+								<div ng-show="registration.area === 'urban'">
+									<p>District: {{ registration.district }}</p>
+									<p>City: {{ registration.city }}</p>
+								</div>
+								<div ng-show="registration.area === 'rural'">
+									<p>District: {{ registration.district }}</p>
+									<p>Block: {{ registration.block }}</p>
+									<p>Gram: {{ registration.gram }}</p>
+								</div>
+								<p>Mobile Number: {{ registration.mobileNumber }}</p>
+								<!--	<button type="submit">Submit</button>-->
+
+								<button type="submit" ng-click="submitForm()">Submit</button>
+							</div>
+
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	</div>
+
+
+
+
+
+	<script src="angularjs/app.js"></script>
+</body>
+
+</html>
